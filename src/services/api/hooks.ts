@@ -98,6 +98,34 @@ const ANIME_DETAIL_QUERY = gql`
     Media(id: $id, type: ANIME) {
       ...AnimeFields
       bannerImage
+      trailer {
+        id
+        site
+        thumbnail
+      }
+      characters(sort: ROLE, perPage: 15) {
+        edges {
+          role
+          node {
+            id
+            name {
+              full
+            }
+            image {
+              large
+            }
+          }
+          voiceActors(language: JAPANESE) {
+            id
+            name {
+              full
+            }
+            image {
+              large
+            }
+          }
+        }
+      }
       nextAiringEpisode {
         episode
         timeUntilAiring

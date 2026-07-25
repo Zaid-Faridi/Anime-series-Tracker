@@ -5,6 +5,11 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAnimeDetail } from '../../services/api/hooks';
 import { useWatchlist, useMutateWatchlist } from '../../hooks/useWatchlist';
 import { useFavorites, useMutateFavorites } from '../../hooks/useFavorites';
+import { useNotifications } from '../../hooks/useNotifications';
+import YoutubeIframe from 'react-native-youtube-iframe';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import { AuthContext } from '../../context/AuthContext';
 
 const AnimeDetailScreen = ({ route, navigation }: any) => {
   const { anime } = route.params;
@@ -18,8 +23,15 @@ const AnimeDetailScreen = ({ route, navigation }: any) => {
   const { mutateAddToWatchlist, mutateRemoveFromWatchlist } = useMutateWatchlist();
   const { favorites } = useFavorites();
   const { mutateAddToFavorites, mutateRemoveFromFavorites } = useMutateFavorites();
+  const { scheduleAiringNotification } = useNotifications();
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [trailerVisible, setTrailerVisible] = useState(false);
+  const [reviewVisible, setReviewVisible] = useState(false);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewRating, setReviewRating] = useState('10');
+  
+  const { user } = React.useContext(AuthContext);
   const watchlistItem = watchlist.find(item => item.animeId === animeId);
   const [status, setStatus] = useState<any>(watchlistItem?.status || 'Watching');
   const [episodes, setEpisodes] = useState(watchlistItem?.episodesWatched?.toString() || '0');
@@ -49,7 +61,32 @@ const AnimeDetailScreen = ({ route, navigation }: any) => {
       status: status,
       updatedAt: Date.now()
     });
+    
+    // Schedule notification if there's an airing episode
+    if (animeData.nextAiringEpisode?.timeUntilAiring && status === 'Watching') {
+      scheduleAiringNotification(animeData.title?.romaji || animeData.title, animeData.nextAiringEpisode.timeUntilAiring);
+    }
+
     setModalVisible(false);
+  };
+
+  const handleSaveReview = async () => {
+    if (!reviewText.trim()) return;
+    try {
+      await addDoc(collection(db, 'reviews'), {
+        userId: user?.uid,
+        userName: user?.email?.split('@')[0] || 'Anonymous',
+        animeId,
+        animeTitle: animeData.title?.romaji || animeData.title,
+        text: reviewText,
+        rating: parseInt(reviewRating) || 10,
+        createdAt: Date.now(),
+      });
+      setReviewVisible(false);
+      setReviewText('');
+    } catch (e) {
+      console.log('Error saving review:', e);
+    }
   };
 
   const handleRemoveWatchlist = () => {
@@ -110,6 +147,45 @@ const AnimeDetailScreen = ({ route, navigation }: any) => {
           <Text style={styles.description}>
             {animeData.description?.replace(/<[^>]+>/g, '') || "No description available."}
           </Text>
+
+          {/* Trailer Button */}
+          {animeData.trailer?.site === 'youtube' && (
+            <TouchableOpacity style={styles.trailerBtn} onPress={() => setTrailerVisible(true)}>
+              <Ionicons name="play-circle" size={24} color="#FFF" />
+              <Text style={styles.trailerBtnText}>Watch Trailer</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Characters Section */}
+          {animeData.characters?.edges?.length > 0 && (
+            <>
+              <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Characters & Voice Actors</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -24, paddingHorizontal: 24 }}>
+                {animeData.characters.edges.map((charEdge: any, index: number) => (
+                  <View key={index} style={styles.characterCard}>
+                    <View style={styles.charHalf}>
+                      <Image source={{ uri: charEdge.node.image?.large }} style={styles.charImage} />
+                      <Text style={styles.charName} numberOfLines={2}>{charEdge.node.name.full}</Text>
+                    </View>
+                    {charEdge.voiceActors?.length > 0 && (
+                      <View style={styles.charHalf}>
+                        <Image source={{ uri: charEdge.voiceActors[0].image?.large }} style={styles.charImage} />
+                        <Text style={styles.vaName} numberOfLines={2}>{charEdge.voiceActors[0].name.full}</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+                <View style={{ width: 40 }} />
+              </ScrollView>
+            </>
+          )}
+
+          {/* Write a Review Button */}
+          <TouchableOpacity style={[styles.trailerBtn, { backgroundColor: theme.card, marginTop: 24 }]} onPress={() => setReviewVisible(true)}>
+            <Ionicons name="create-outline" size={24} color={theme.text} />
+            <Text style={[styles.trailerBtnText, { color: theme.text }]}>Write a Review</Text>
+          </TouchableOpacity>
+
           <View style={{ height: 40 }} />
         </View>
       </ScrollView>
@@ -158,6 +234,67 @@ const AnimeDetailScreen = ({ route, navigation }: any) => {
                 <Text style={styles.modalButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Trailer Modal */}
+      <Modal visible={trailerVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => setTrailerVisible(false)} />
+          <View style={styles.trailerContainer}>
+            <View style={styles.trailerHeader}>
+              <Text style={styles.trailerTitle}>Official Trailer</Text>
+              <TouchableOpacity onPress={() => setTrailerVisible(false)}>
+                <Ionicons name="close-circle" size={30} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            {animeData.trailer?.id && (
+              <YoutubeIframe
+                height={250}
+                play={true}
+                videoId={animeData.trailer.id}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Review Modal */}
+      <Modal visible={reviewVisible} transparent animationType="fade">
+        <View style={[styles.modalOverlay, { justifyContent: 'center', padding: 24 }]}>
+          <View style={[styles.modalContent, { borderRadius: 24, paddingBottom: 24 }]}>
+            <View style={styles.trailerHeader}>
+              <Text style={styles.trailerTitle}>Write a Review</Text>
+              <TouchableOpacity onPress={() => setReviewVisible(false)}>
+                <Ionicons name="close-circle" size={28} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.episodesInputContainer}>
+              <Text style={[styles.modalLabel, { marginRight: 12, marginBottom: 0 }]}>Rating (1-10):</Text>
+              <TextInput
+                style={[styles.episodesInput, { width: 60, height: 40, paddingVertical: 0 }]}
+                keyboardType="numeric"
+                value={reviewRating}
+                onChangeText={setReviewRating}
+                maxLength={2}
+              />
+            </View>
+            <TextInput
+              style={{
+                backgroundColor: theme.background, color: theme.text,
+                borderWidth: 1, borderColor: theme.border, borderRadius: 12,
+                padding: 16, height: 120, textAlignVertical: 'top', marginBottom: 20
+              }}
+              placeholder="What did you think of this anime?"
+              placeholderTextColor={theme.textSecondary}
+              multiline
+              value={reviewText}
+              onChangeText={setReviewText}
+            />
+            <TouchableOpacity style={[styles.modalButton, { marginLeft: 0 }]} onPress={handleSaveReview}>
+              <Text style={[styles.modalButtonText, { textAlign: 'center' }]}>Post to Community</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -238,6 +375,26 @@ const getStyles = (theme: any) => StyleSheet.create({
   },
   modalButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
   modalButtonTextOutline: { color: theme.text, fontWeight: 'bold', fontSize: 16 },
+  
+  trailerBtn: {
+    flexDirection: 'row', backgroundColor: theme.primary, paddingVertical: 14,
+    borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 12,
+    shadowColor: theme.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+  },
+  trailerBtnText: { color: '#FFF', fontSize: 16, fontWeight: 'bold', marginLeft: 8 },
+  trailerContainer: { backgroundColor: theme.background, paddingBottom: 40, borderTopLeftRadius: 32, borderTopRightRadius: 32 },
+  trailerHeader: { flexDirection: 'row', justifyContent: 'space-between', padding: 24, alignItems: 'center' },
+  trailerTitle: { fontSize: 20, fontWeight: 'bold', color: theme.text },
+  
+  characterCard: { 
+    flexDirection: 'row', backgroundColor: theme.card, borderRadius: 16, 
+    marginRight: 16, padding: 12, width: 220,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
+  },
+  charHalf: { flex: 1, alignItems: 'center' },
+  charImage: { width: 60, height: 60, borderRadius: 30, marginBottom: 8 },
+  charName: { fontSize: 13, fontWeight: 'bold', color: theme.text, textAlign: 'center' },
+  vaName: { fontSize: 12, color: theme.textSecondary, textAlign: 'center', marginTop: 2 },
 });
 
 export default AnimeDetailScreen;

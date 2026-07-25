@@ -20,6 +20,7 @@ import ProfileScreen from '../screens/Main/ProfileScreen';
 import FavoritesScreen from '../screens/Main/FavoritesScreen';
 import EditProfileScreen from '../screens/Main/EditProfileScreen';
 import AnimeDetailScreen from '../screens/Detail/AnimeDetailScreen';
+import CommunityScreen from '../screens/Main/CommunityScreen';
 
 import OnboardingScreen from '../screens/Onboarding/OnboardingScreen';
 
@@ -62,6 +63,8 @@ const MainTabs = () => {
             iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'Watchlist') {
             iconName = focused ? 'bookmark' : 'bookmark-outline';
+          } else if (route.name === 'Community') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -73,6 +76,7 @@ const MainTabs = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Watchlist" component={WatchlistScreen} />
+      <Tab.Screen name="Community" component={CommunityScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
