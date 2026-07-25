@@ -8,11 +8,16 @@ A beautifully designed, feature-rich Anime tracking application built with React
 - **Dynamic Theme:** Built-in Light and Dark modes with a global toggle that instantly updates the entire app's aesthetic.
 - **Anime Discovery:** Explore anime by Trending, Popular This Season, Upcoming Next Season, Top Rated, and personalized Genre Recommendations (Action, Romance, etc.).
 - **Smart Watchlist:** Add anime to your watchlist, track your episodes watched, and update your status (Watching, Completed, Plan to Watch, etc.).
+- **Offline Support:** Your Watchlists and Favorites are fully cached on your device for instant, offline access.
+- **Smart Push Notifications:** Never miss an episode! Get notified 15 minutes before an episode of your "Watching" anime drops.
+- **YouTube Trailers:** Watch official trailers embedded directly in the app inside a custom edge-to-edge modal.
+- **Characters & Voice Actors:** Explore the main cast and their Japanese Voice Actors (Seiyuu) for any anime.
+- **Global Community Feed:** Rate anime out of 10 and write reviews that sync in real-time to a global community feed!
 - **Continue Watching:** A dedicated section on the Home screen to easily pick up where you left off and increment episodes with a single tap.
 - **Favorites:** Save your favorite anime to a dedicated list for quick access.
 - **Search:** Quickly search the massive AniList database for any anime.
 - **Secure Authentication:** User accounts and data synchronization powered by Firebase Authentication.
-- **Cloud Sync:** Your watchlist and favorites are securely backed up in real-time using Firebase Firestore.
+- **Cloud Sync:** Your watchlist, favorites, and reviews are securely backed up in real-time using Firebase Firestore.
 
 ## 🛠️ Tech Stack
 
