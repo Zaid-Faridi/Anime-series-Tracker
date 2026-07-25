@@ -74,7 +74,13 @@ const HomeScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Welcome back!</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <Image 
+                source={require('../../../assets/icon.png')} 
+                style={{ width: 28, height: 28, borderRadius: 8, marginRight: 8 }} 
+              />
+              <Text style={[styles.greeting, { marginBottom: 0 }]}>Anime Tracker</Text>
+            </View>
             <Text style={styles.title}>What would you like to watch?</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 12 }}>

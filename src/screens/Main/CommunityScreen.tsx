@@ -46,7 +46,13 @@ const CommunityScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Community</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Image 
+            source={require('../../../assets/icon.png')} 
+            style={{ width: 32, height: 32, borderRadius: 8, marginRight: 12 }} 
+          />
+          <Text style={styles.title}>Community</Text>
+        </View>
       </View>
       {reviews.length === 0 ? (
         <View style={styles.emptyContainer}>
