@@ -73,13 +73,16 @@ const HomeScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
               <Image 
                 source={require('../../../assets/icon.png')} 
-                style={{ width: 28, height: 28, borderRadius: 8, marginRight: 8 }} 
+                style={{ width: 48, height: 48, borderRadius: 14, marginRight: 12, borderWidth: 1, borderColor: theme.border }} 
               />
-              <Text style={[styles.greeting, { marginBottom: 0 }]}>Anime Tracker</Text>
+              <View>
+                <Text style={[styles.greeting, { marginBottom: 2, fontSize: 18, fontWeight: '700', color: theme.primary }]}>Anime Tracker</Text>
+                <Text style={{ fontSize: 12, color: theme.textSecondary, fontWeight: '600' }}>Your personal anime hub</Text>
+              </View>
             </View>
             <Text style={styles.title}>What would you like to watch?</Text>
           </View>

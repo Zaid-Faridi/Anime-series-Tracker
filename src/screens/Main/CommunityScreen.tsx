@@ -45,13 +45,16 @@ const CommunityScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingBottom: 16 }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Image 
             source={require('../../../assets/icon.png')} 
-            style={{ width: 32, height: 32, borderRadius: 8, marginRight: 12 }} 
+            style={{ width: 44, height: 44, borderRadius: 12, marginRight: 14, borderWidth: 1, borderColor: theme.border }} 
           />
-          <Text style={styles.title}>Community</Text>
+          <View>
+            <Text style={styles.title}>Community</Text>
+            <Text style={{ fontSize: 13, color: theme.textSecondary, fontWeight: '600', marginTop: -2 }}>Global Reviews & Chatter</Text>
+          </View>
         </View>
       </View>
       {reviews.length === 0 ? (
